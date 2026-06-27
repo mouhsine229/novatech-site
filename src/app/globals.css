@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+:root {
+  /* Circuit & Signal — palette NOVATECH */
+  --color-ink: #0b0e14;          /* fond sombre principal */
+  --color-ink-soft: #11151f;     /* fond sombre secondaire (cartes) */
+  --color-paper: #f5f3ec;        /* fond clair chaud */
+  --color-paper-soft: #ebe8de;   /* fond clair secondaire */
+  --color-signal: #e8542c;       /* accent cuivre/orange — signature */
+  --color-signal-soft: #f2845f;
+  --color-success: #1fa67a;      /* vert signal — statut "terminé" */
+  --color-success-soft: #3ec99c;
+  --color-slate: #6b7280;        /* gris ardoise — texte secondaire */
+  --color-slate-soft: #9aa1ac;
+  --color-border: rgba(245, 243, 236, 0.12);
+  --color-border-light: rgba(11, 14, 20, 0.10);
+
+  --font-display: "Space Grotesk", "Arial", sans-serif;
+  --font-body: "IBM Plex Sans", "Helvetica", sans-serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+}
+
+@theme inline {
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-paper: var(--color-paper);
+  --color-paper-soft: var(--color-paper-soft);
+  --color-signal: var(--color-signal);
+  --color-signal-soft: var(--color-signal-soft);
+  --color-success: var(--color-success);
+  --color-success-soft: var(--color-success-soft);
+  --color-slate: var(--color-slate);
+  --color-slate-soft: var(--color-slate-soft);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Accessibilité : focus visible clair, jamais supprimé */
+:focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Motif de trace de circuit — utilisé en arrière-plan du héro */
+.circuit-trace {
+  background-image:
+    linear-gradient(var(--color-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* LED de statut */
+.led-dot {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.led-dot::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  opacity: 0.35;
+}
+
+.led-dot--success {
+  background: var(--color-success);
+}
+.led-dot--success::after {
+  background: var(--color-success);
+  animation: led-pulse 2.4s ease-in-out infinite;
+}
+
+.led-dot--progress {
+  background: var(--color-signal);
+}
+.led-dot--progress::after {
+  background: var(--color-signal);
+  animation: led-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes led-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.35; }
+  50% { transform: scale(1.8); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .led-dot::after { animation: none !important; }
+}
