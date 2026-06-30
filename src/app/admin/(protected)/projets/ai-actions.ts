@@ -8,10 +8,10 @@ export type GenerateDescriptionResult = {
 
 /**
  * Génère une proposition de description de projet à partir de son nom et de
- * son URL, via l'API Claude (Anthropic). L'utilisateur valide ou modifie le
+ * son URL, via l'API OpenAI (GPT). L'utilisateur valide ou modifie le
  * texte proposé avant publication — voir cahier des charges, section 3.4.2.
  *
- * Nécessite la variable d'environnement ANTHROPIC_API_KEY. Tant qu'elle n'est
+ * Nécessite la variable d'environnement OPENAI_API_KEY. Tant qu'elle n'est
  * pas définie, cette fonction renvoie une erreur explicite sans bloquer le
  * reste de l'application (le champ description reste éditable manuellement).
  */
@@ -19,13 +19,13 @@ export async function generateProjectDescription(
   nom: string,
   url: string
 ): Promise<GenerateDescriptionResult> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
     return {
       success: false,
       error:
-        "La génération automatique par IA n'est pas encore configurée (ANTHROPIC_API_KEY manquante). " +
+        "La génération automatique par IA n'est pas encore configurée (OPENAI_API_KEY manquante). " +
         "Tu peux rédiger la description manuellement en attendant.",
     };
   }
@@ -35,15 +35,14 @@ export async function generateProjectDescription(
   }
 
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
+        "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
+        model: "gpt-4o-mini",
         max_tokens: 200,
         messages: [
           {
@@ -62,19 +61,19 @@ export async function generateProjectDescription(
 
     if (!response.ok) {
       const errBody = await response.text();
-      return { success: false, error: `Erreur de l'API Claude (${response.status}) : ${errBody}` };
+      return { success: false, error: `Erreur de l'API OpenAI (${response.status}) : ${errBody}` };
     }
 
     const data = await response.json();
-    const textBlock = data.content?.find((block: { type: string }) => block.type === "text");
+    const textContent = data.choices?.[0]?.message?.content;
 
-    if (!textBlock?.text) {
-      return { success: false, error: "Réponse inattendue de l'API Claude." };
+    if (!textContent) {
+      return { success: false, error: "Réponse inattendue de l'API OpenAI." };
     }
 
-    return { success: true, description: textBlock.text.trim() };
+    return { success: true, description: textContent.trim() };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erreur inconnue.";
-    return { success: false, error: `Impossible de contacter l'API Claude : ${message}` };
+    return { success: false, error: `Impossible de contacter l'API OpenAI : ${message}` };
   }
 }
